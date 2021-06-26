@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     SECRET_KEY: str
     ALGORITHM: str
     TOKEN_URL: str
+    ACCESS_TOKEN_EXPIRE_MINUTES: int
     # String of comma separated values
     CORS_ORIGINS: str
 
