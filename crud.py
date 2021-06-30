@@ -3,7 +3,6 @@ from fastapi import Depends, HTTPException, status
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
-from typing import Any, Dict, Generic, List, Optional, Type, TypeVar, Union
 
 from database import get_db
 from dependencies import TokenData, oauth2_scheme
@@ -116,6 +115,21 @@ def create_own_tournament(db: Session, owner_id: int, name: str, description: st
 
 
 # COMPETITOR
+def get_tournament_competitors(db: Session, tournament_id: int, skip: int = 0, limit: int = 100):
+    return (
+        db.query(models.Competitor)
+        .filter(models.Competitor.tournament_id == tournament_id)
+        .order_by(models.Competitor.wins.desc())
+        .offset(skip)
+        .limit(100)
+        .all()
+    )
+
+
+def get_competitor(db: Session, competitor_id: int):
+    return db.query(models.Competitor).filter(models.Competitor.id == competitor_id).first()
+
+
 def create_competitor(db: Session, name: str, tournament_id: int):
     db_competitor = models.Competitor(name=name, tournament_id=tournament_id)
     db.add(db_competitor)
@@ -124,11 +138,66 @@ def create_competitor(db: Session, name: str, tournament_id: int):
     return db_competitor
 
 
-def get_tournament_competitors(db: Session, tournament_id: int, skip: int = 0, limit: int = 100):
+def update_competitor(
+    db: Session,
+    competitor_id: int,
+    name: str,
+    wins: int,
+    losses: int,
+):
+    competitor = get_competitor(db=db, competitor_id=competitor_id)
+    competitor.name = name
+    competitor.wins = wins
+    competitor.losses = losses
+    db.add(competitor)
+    db.commit()
+    db.refresh(competitor)
+    return competitor
+
+
+# Match
+def get_matchups(db: Session, tournament_id: int, in_progress: bool = True):
+    if not in_progress:
+        return (
+            db.query(models.Match)
+            .filter(
+                models.Match.tournament_id == tournament_id,
+                # using "!="" instead of "is not" to work with sqlalchemy
+                models.Match.winner_id != None
+            )
+            .all()
+        )
     return (
-        db.query(models.Competitor)
-        .filter(models.Competitor.tournament_id == tournament_id)
-        .offset(skip)
-        .limit(100)
+        db.query(models.Match)
+        .filter(
+            models.Match.tournament_id == tournament_id,
+            # using "==" instead of "is" to work with sqlalchemy
+            models.Match.winner_id == None
+        )
         .all()
     )
+
+
+def create_matchups(db: Session, tournament_id: int):
+    competitors = get_tournament_competitors(db=db, tournament_id=tournament_id)
+
+    if len(competitors) % 2 != 0:
+        return
+
+    # this only works on the first round
+    pairs = list(zip(competitors[::2], competitors[1::2]))
+
+    # get matches and if all players have already played each other
+    # then the tournament is over and the winner should have the most points
+    # will need a tie breaker probably
+
+    for pair in pairs:
+        match = models.Match(
+            tournament_id=tournament_id,
+            competitor_one=pair[0].id,
+            competitor_two=pair[1].id,
+        )
+        db.add(match)
+    db.commit()
+        
+    return get_matchups(db=db, tournament_id=tournament_id)

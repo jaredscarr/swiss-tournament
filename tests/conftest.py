@@ -16,7 +16,7 @@ def get_test_db_uri() -> str:
     return f'{settings.SQLALCHEMY_DATABASE_URI}_test'
 
 
-@pytest.fixture
+@pytest.fixture()
 def test_db():
     """
     Modify the db session to automatically roll back after each test.
@@ -72,7 +72,7 @@ def create_test_db():
     drop_database(test_db_url)
 
 
-@pytest.fixture
+@pytest.fixture()
 def client(test_db):
     """Get a TestClient instance that reads/writes to the test database."""
 
@@ -94,10 +94,9 @@ def get_password_hash() -> str:
     return "supersecrethash"
 
 
-@pytest.fixture
+@pytest.fixture()
 def test_user(test_db) -> models.User:
     """Make a test user in the database."""
-
     user = models.User(
         username="fake@email.com",
         hashed_password=get_password_hash(),
@@ -105,14 +104,67 @@ def test_user(test_db) -> models.User:
     )
     test_db.add(user)
     test_db.commit()
-    return user
+    yield user
 
+
+@pytest.fixture()
+def test_tournament(test_db, test_user) -> models.Tournament:
+    """Create a test tournament in the database."""
+    tournament = models.Tournament(
+        name="Knights of the Round of the Table",
+        owner_id=test_user.id,
+    )
+    test_db.add(tournament)
+    test_db.commit()
+    yield tournament
+
+
+@pytest.fixture()
+def test_competitor_one(test_db, test_tournament) -> models.Competitor:
+    """Create a test competitor in the database."""
+    competitor = models.Competitor(
+        name="Percival",
+        tournament_id=test_tournament.id,
+        wins=0,
+        losses=0,
+    )
+    test_db.add(competitor)
+    test_db.commit()
+    yield competitor
+
+
+@pytest.fixture()
+def test_competitor_two(test_db, test_tournament) -> models.Competitor:
+    """Create a test competitor in the database."""
+    competitor = models.Competitor(
+        name="Merlin",
+        tournament_id=test_tournament.id,
+        wins=0,
+        losses=0,
+    )
+    test_db.add(competitor)
+    test_db.commit()
+    yield competitor
+
+
+@pytest.fixture()
+def test_match(test_db, test_tournament, test_competitor_one, test_competitor_two) -> models.Match:
+    """Create a match in the database."""
+    match = models.Win(
+        tournament_id=test_tournament.id,
+        winner_id=test_competitor_one.id,
+        loser_id=test_competitor_two.id,
+    )
+    test_db.add(match)
+    test_db.commit()
+    yield match
+    
 
 def verify_password_mock(first: str, second: str) -> bool:
     return True
 
 
-@pytest.fixture
+@pytest.fixture()
 def user_token_headers(
     client: TestClient, test_user, test_password, monkeypatch
 ) -> Dict[str, str]:
@@ -126,4 +178,32 @@ def user_token_headers(
     tokens = r.json()
     a_token = tokens["access_token"]
     headers = {"Authorization": f"Bearer {a_token}"}
-    return headers
+    yield headers
+
+
+def create_competitors(comp_list, test_db):
+    """Add competitors to the database."""
+    for competitor in comp_list:
+        wins = None
+        losses = None
+        if "wins" in competitor.keys():
+            wins = competitor["wins"]
+        if "losses" in competitor.keys():
+            losses = competitor["losses"]
+        db_competitor = models.Competitor(
+            name=competitor["name"],
+            tournament_id=competitor["tournament_id"],
+            wins=wins,
+            losses=losses,
+        )
+        test_db.add(db_competitor)
+    test_db.commit()
+
+
+def get_competitor_by_id(competitor_id, test_db):
+    return (
+        test_db
+        .query(models.Competitor)
+        .filter(models.Competitor.id == competitor_id)
+        .first()
+    )

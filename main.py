@@ -2,11 +2,13 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from config import settings
-from routers import users, tournaments
+from routers import users, tournaments, competitors, matches
 
 app = FastAPI()
 app.include_router(users.router)
 app.include_router(tournaments.router)
+app.include_router(competitors.router)
+app.include_router(matches.router)
 # Expects a string of comma separated values
 origins = settings.CORS_ORIGINS.split(',')
 

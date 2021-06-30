@@ -12,17 +12,17 @@ def test_create_user_success(client):
     assert "id" in data
 
 
-def test_create_user(client):
+def test_create_user_already_exists(client):
     client.post(
         "/users/",
         json={"username": "deadpool@example.com", "password": "chimichangas4life"},
     )
-    second_response = client.post(
+    response = client.post(
         "/users/",
         json={"username": "deadpool@example.com", "password": "chimichangas4life"},
     )
-    assert second_response.status_code == 400, second_response.text
-    data = second_response.json()
+    assert response.status_code == 400, response.text
+    data = response.json()
     assert data["detail"] == "Username already registered"
 
 
