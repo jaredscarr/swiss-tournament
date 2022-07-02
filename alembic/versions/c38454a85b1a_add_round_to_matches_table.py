@@ -1,8 +1,8 @@
-"""create tables
+"""add round to matches table
 
-Revision ID: 46ad83a71f0c
-Revises: 
-Create Date: 2021-06-29 13:42:38.849286
+Revision ID: c38454a85b1a
+Revises: 5a42085062d1
+Create Date: 2022-06-30 22:00:28.362731
 
 """
 from alembic import op
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '46ad83a71f0c'
-down_revision = None
+revision = 'c38454a85b1a'
+down_revision = '5a42085062d1'
 branch_labels = None
 depends_on = None
 
