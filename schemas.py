@@ -8,7 +8,8 @@ class TournamentBase(BaseModel):
 
 
 class TournamentCreate(TournamentBase):
-    pass
+    name: str
+    description: Optional[str] = None
 
 
 class Tournament(TournamentBase):
@@ -21,57 +22,38 @@ class Tournament(TournamentBase):
         orm_mode = True
 
 
-class WinBase(BaseModel):
-    winner_id: int
-
-
-class WinCreate(WinBase):
-    pass
-
-
-class Win(WinBase):
-    id: int
-    tournament_id: int
-    match_id: int
-    winner_id: int
-
-    class Config:
-        orm_mode = True
-
-
-class LossBase(BaseModel):
-    loser_id: int
-
-
-class LossCreate(LossBase):
-    pass
-
-
-class Loss(LossBase):
-    id: int
-    tournament_id: int
-    match_id: int
-    loser_id: int
-
-    class Config:
-        orm_mode = True
-
-
 class MatchBase(BaseModel):
     tournament_id: int
-    winner_id: int
-    loser_id: int
+    competitor_one: int
+    competitor_two: int
+    round: int
+    winner_id: Optional[int]
+    loser_id: Optional[int]
 
 
 class MatchCreate(MatchBase):
-    pass
+    tournament_id: int
+    competitor_one: int
+    competitor_two: int
+    round: int
+    winner_id: Optional[int]
+    loser_id: Optional[int]
+
+
+class MatchUpdate(MatchBase):
+    id: int
+    tournament_id: int
+    winner_id: Optional[int]
+    loser_id: Optional[int]
 
 
 class Match(MatchBase):
     id: int
     tournament_id: int
-    winner_id: int
-    loser_id: int
+    competitor_one: int
+    competitor_two: int
+    winner_id: Optional[int]
+    loser_id: Optional[int]
 
     class Config:
         orm_mode = True
@@ -79,18 +61,27 @@ class Match(MatchBase):
 
 class CompetitorBase(BaseModel):
     name: str
+    tournament_id: int
 
 
 class CompetitorCreate(CompetitorBase):
-    pass
+    name: str
+    tournament_id: int
+
+
+class CompetitorUpdate(CompetitorBase):
+    id: int
+    name: str
+    wins: Optional[int]
+    losses: Optional[int]
 
 
 class Competitor(CompetitorBase):
     id: int
     name: str
     tournament_id: int
-    wins: List[Win] = []
-    losses: List[Loss] = []
+    wins: Optional[int]
+    losses: Optional[int]
 
     class Config:
         orm_mode = True

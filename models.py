@@ -36,33 +36,8 @@ class Competitor(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, index=True)
     tournament_id = Column(Integer, ForeignKey('tournaments.id'))
-
-    wins = relationship('Win')
-    losses = relationship('Loss')
-
-
-class Win(Base):
-
-    __tablename__ = 'wins'
-
-    id = Column(Integer, primary_key=True, index=True)
-    tournament_id = Column(Integer, ForeignKey('tournaments.id'))
-    match_id = Column(Integer, ForeignKey('matches.id'))
-    winner_id = Column(Integer, ForeignKey('competitors.id'))
-
-    winner = relationship('Competitor', back_populates='wins')
-
-
-class Loss(Base):
-
-    __tablename__ = 'losses'
-
-    id = Column(Integer, primary_key=True, index=True)
-    tournament_id = Column(Integer, ForeignKey('tournaments.id'))
-    match_id = Column(Integer, ForeignKey('matches.id'))
-    loser_id = Column(Integer, ForeignKey('competitors.id'))
-
-    loser = relationship('Competitor', back_populates='losses')
+    wins = Column(Integer)
+    losses = Column(Integer)
 
 
 class Match(Base):
@@ -71,5 +46,8 @@ class Match(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     tournament_id = Column(Integer, ForeignKey('tournaments.id'))
+    competitor_one = Column(Integer, ForeignKey('competitors.id'))
+    competitor_two = Column(Integer, ForeignKey('competitors.id'))
+    round = Column(Integer)
     winner_id = Column(Integer, ForeignKey('competitors.id'))
     loser_id = Column(Integer, ForeignKey('competitors.id'))

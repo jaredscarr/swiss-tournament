@@ -2,11 +2,13 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from config import settings
-from routers import users, tournaments
+from routers import users, tournaments, competitors, matches
 
 app = FastAPI()
 app.include_router(users.router)
 app.include_router(tournaments.router)
+app.include_router(competitors.router)
+app.include_router(matches.router)
 # Expects a string of comma separated values
 origins = settings.CORS_ORIGINS.split(',')
 
@@ -14,11 +16,11 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=['*'],
+    allow_headers=['*'],
 )
 
 
 @app.get('/')
 def read_root():
-    return {"Hello": "World"}
+    return {'Hello': 'World'}

@@ -41,7 +41,7 @@ async def login_for_access_token(
 def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db_user = crud.get_user_by_username(db=db, username=user.username)
     if db_user:
-        raise HTTPException(status_code=400, detail="Username already registered")
+        raise HTTPException(status_code=400, detail='Username already registered')
     return crud.create_user(db=db, username=user.username, password=user.password)
 
 
