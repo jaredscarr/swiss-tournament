@@ -26,6 +26,7 @@ class MatchBase(BaseModel):
     tournament_id: int
     competitor_one: int
     competitor_two: int
+    round: int
     winner_id: Optional[int]
     loser_id: Optional[int]
 
@@ -34,14 +35,16 @@ class MatchCreate(MatchBase):
     tournament_id: int
     competitor_one: int
     competitor_two: int
+    round: int
     winner_id: Optional[int]
     loser_id: Optional[int]
 
 
 class MatchUpdate(MatchBase):
+    id: int
     tournament_id: int
-    winner_id: int
-    loser_id: int
+    winner_id: Optional[int]
+    loser_id: Optional[int]
 
 
 class Match(MatchBase):
@@ -58,14 +61,17 @@ class Match(MatchBase):
 
 class CompetitorBase(BaseModel):
     name: str
+    tournament_id: int
 
 
 class CompetitorCreate(CompetitorBase):
     name: str
+    tournament_id: int
 
 
 class CompetitorUpdate(CompetitorBase):
-    name: Optional[str]
+    id: int
+    name: str
     wins: Optional[int]
     losses: Optional[int]
 

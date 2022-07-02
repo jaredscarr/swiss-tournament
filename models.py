@@ -48,5 +48,6 @@ class Match(Base):
     tournament_id = Column(Integer, ForeignKey('tournaments.id'))
     competitor_one = Column(Integer, ForeignKey('competitors.id'))
     competitor_two = Column(Integer, ForeignKey('competitors.id'))
+    round = Column(Integer)
     winner_id = Column(Integer, ForeignKey('competitors.id'))
     loser_id = Column(Integer, ForeignKey('competitors.id'))
