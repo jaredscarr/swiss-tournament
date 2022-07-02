@@ -32,7 +32,7 @@ def create_own_tournament(
     )
 
     if tournament_exists:
-        raise HTTPException(status_code=400, detail="Tournament name already exists.")
+        raise HTTPException(status_code=400, detail='Tournament name already exists.')
     return crud.create_own_tournament(
         db=db,
         owner_id=current_user.id,

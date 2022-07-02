@@ -37,7 +37,7 @@ def test_db():
     test_session = test_session_maker()
     test_session.begin_nested()
 
-    @event.listens_for(test_session, "after_transaction_end")
+    @event.listens_for(test_session, 'after_transaction_end')
     def restart_savepoint(s, transaction):
         if transaction.nested and not transaction._parent.nested:
             s.expire_all()
@@ -51,7 +51,7 @@ def test_db():
     connection.close()
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope='session', autouse=True)
 def create_test_db():
     """Create a test database and use it for the whole test session."""
 
@@ -60,7 +60,7 @@ def create_test_db():
     # Create the test database
     assert not database_exists(
         test_db_url
-    ), "Test database already exists. Aborting tests."
+    ), 'Test database already exists. Aborting tests.'
     create_database(test_db_url)
     test_engine = create_engine(test_db_url)
     Base.metadata.create_all(test_engine)
@@ -86,12 +86,12 @@ def client(test_db):
 
 @pytest.fixture
 def test_password() -> str:
-    return "securepassword"
+    return 'securepassword'
 
 
 def get_password_hash() -> str:
     """Password hashing can be expensive so a mock will be much faster."""
-    return "supersecrethash"
+    return 'supersecrethash'
 
 
 @pytest.fixture()
@@ -111,7 +111,7 @@ def test_user(test_db) -> models.User:
 def test_tournament(test_db, test_user) -> models.Tournament:
     """Create a test tournament in the database."""
     tournament = models.Tournament(
-        name="Knights of the Round of the Table",
+        name='Knights of the Round of the Table',
         owner_id=test_user.id,
     )
     test_db.add(tournament)
@@ -123,7 +123,7 @@ def test_tournament(test_db, test_user) -> models.Tournament:
 def test_competitor_one(test_db, test_tournament) -> models.Competitor:
     """Create a test competitor in the database."""
     competitor = models.Competitor(
-        name="Percival",
+        name='Percival',
         tournament_id=test_tournament.id,
         wins=0,
         losses=0,
@@ -137,7 +137,7 @@ def test_competitor_one(test_db, test_tournament) -> models.Competitor:
 def test_competitor_two(test_db, test_tournament) -> models.Competitor:
     """Create a test competitor in the database."""
     competitor = models.Competitor(
-        name="Merlin",
+        name='Merlin',
         tournament_id=test_tournament.id,
         wins=0,
         losses=0,
@@ -150,10 +150,13 @@ def test_competitor_two(test_db, test_tournament) -> models.Competitor:
 @pytest.fixture()
 def test_match(test_db, test_tournament, test_competitor_one, test_competitor_two) -> models.Match:
     """Create a match in the database."""
-    match = models.Win(
+    match = models.Match(
         tournament_id=test_tournament.id,
-        winner_id=test_competitor_one.id,
-        loser_id=test_competitor_two.id,
+        competitor_one=test_competitor_one.id,
+        competitor_two=test_competitor_two.id,
+        round=0,
+        winner_id=None,
+        loser_id=None,
     )
     test_db.add(match)
     test_db.commit()
@@ -168,42 +171,14 @@ def verify_password_mock(first: str, second: str) -> bool:
 def user_token_headers(
     client: TestClient, test_user, test_password, monkeypatch
 ) -> Dict[str, str]:
-    monkeypatch.setattr(crud, "verify_password", verify_password_mock)
+    monkeypatch.setattr(crud, 'verify_password', verify_password_mock)
 
     login_data = {
-        "username": test_user.username,
-        "password": test_password,
+        'username': test_user.username,
+        'password': test_password,
     }
-    r = client.post("/token", data=login_data)
+    r = client.post('/token', data=login_data)
     tokens = r.json()
-    a_token = tokens["access_token"]
-    headers = {"Authorization": f"Bearer {a_token}"}
+    a_token = tokens['access_token']
+    headers = {'Authorization': f'Bearer {a_token}'}
     yield headers
-
-
-def create_competitors(comp_list, test_db):
-    """Add competitors to the database."""
-    for competitor in comp_list:
-        wins = None
-        losses = None
-        if "wins" in competitor.keys():
-            wins = competitor["wins"]
-        if "losses" in competitor.keys():
-            losses = competitor["losses"]
-        db_competitor = models.Competitor(
-            name=competitor["name"],
-            tournament_id=competitor["tournament_id"],
-            wins=wins,
-            losses=losses,
-        )
-        test_db.add(db_competitor)
-    test_db.commit()
-
-
-def get_competitor_by_id(competitor_id, test_db):
-    return (
-        test_db
-        .query(models.Competitor)
-        .filter(models.Competitor.id == competitor_id)
-        .first()
-    )
