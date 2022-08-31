@@ -251,11 +251,11 @@ def test_create_match_competitor_two_not_found(
     assert data == {'detail': 'Not found.'}
 
 
-def test_match_competitors_success(client, user_token_headers, test_tournament):
+def test_match_competitors_even_success(client, user_token_headers, test_tournament):
     team_names = ['pirates', 'jaguars', 'falcons', 'arrows', 'crushers', 'smashers']
     for name in team_names:
         response = client.post(
-            f'/competitors',
+            '/competitors',
             headers=user_token_headers,
             json={'name': name, 'tournament_id': test_tournament.id},
         )
@@ -268,28 +268,29 @@ def test_match_competitors_success(client, user_token_headers, test_tournament):
     data = response.json()
     assert len(data) == 6
 
-    i = 0
+    round = 0
     while len(data) != 0:
         response = client.get(
-            f'/matches/match_competitors?tournament_id={test_tournament.id}',
+            f'/matches/match_competitors?tournament_id={test_tournament.id}&round={round}',
             headers=user_token_headers
         )
-        assert response.status_code == 201
+        assert response.status_code == 200
         data = response.json()
-        # assert len(data) == 3
-        # Assert that each id is matched only one time
+        # Assert that each id is matched only one time PER ROUND
         competitor_ids = []
         for match in data:
-            assert[match['round'] == i]
+            assert match['round'] == round
             assert match['competitor_one'] != match['competitor_two']
-            competitor_ids.append(match['competitor_one'])
-            competitor_ids.append(match['competitor_two'])
+            if match['competitor_one']:
+                competitor_ids.append(match['competitor_one'])
+            if match['competitor_two']:
+                competitor_ids.append(match['competitor_two'])
         assert len(set(competitor_ids)) == len(competitor_ids)
-        i += 1
+        round += 1
 
-
-def test_match_competitors_uneven(client, user_token_headers, test_tournament):
-    team_names = ['pirates', 'jaguars', 'falcons', 'arrows', 'crushers']
+        
+def test_match_competitors_uneven_success(client, user_token_headers, test_tournament):
+    team_names = ['pirates', 'jaguars', 'falcons', 'crushers', 'smashers']
     for name in team_names:
         response = client.post(
             f'/competitors',
@@ -305,10 +306,22 @@ def test_match_competitors_uneven(client, user_token_headers, test_tournament):
     data = response.json()
     assert len(data) == 5
 
-    response = client.get(
-        f'/matches/match_competitors?tournament_id={test_tournament.id}',
-        headers=user_token_headers
-    )
-    assert response.status_code == 404
-    data = response.json()
-    assert data == {'detail': 'Must have an even number of competitors to begin.'}
+    round = 0
+    while len(data) != 0:
+        response = client.get(
+            f'/matches/match_competitors?tournament_id={test_tournament.id}&round={round}',
+            headers=user_token_headers
+        )
+        assert response.status_code == 200
+        data = response.json()
+        # Assert that each id is matched only one time PER ROUND
+        competitor_ids = []
+        for match in data:
+            assert match['round'] == round
+            assert match['competitor_one'] != match['competitor_two']
+            if match['competitor_one']:
+                competitor_ids.append(match['competitor_one'])
+            if match['competitor_two']:
+                competitor_ids.append(match['competitor_two'])
+        assert len(set(competitor_ids)) == len(competitor_ids)
+        round += 1

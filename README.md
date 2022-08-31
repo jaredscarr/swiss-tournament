@@ -1,5 +1,7 @@
 # swiss-tournament
-Swiss style tournament api built with FastAPI. At the moment no tie breakers. Must have an even number of competitors.
+Swiss style tournament api built with FastAPI. If there are an odd number of competitors then one
+match per round will have a bye. Tie-breaker involves a new tournament for those players
+to compete again.
 
 ### Setup
 
