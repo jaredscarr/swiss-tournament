@@ -11,7 +11,7 @@ from database import get_db
 router = APIRouter()
 
 
-@router.get('/tournaments/', response_model=List[schemas.Tournament])
+@router.get('/tournaments', response_model=List[schemas.Tournament])
 def get_tournaments(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(crud.get_current_user)
@@ -19,7 +19,7 @@ def get_tournaments(
     return crud.get_tournaments_by_owner_id(db=db, owner_id=current_user.id)
 
 
-@router.post('/tournaments/', response_model=schemas.Tournament, status_code=status.HTTP_201_CREATED)
+@router.post('/tournaments', response_model=schemas.Tournament, status_code=status.HTTP_201_CREATED)
 def create_own_tournament(
     tournament: schemas.TournamentCreate,
     db: Session = Depends(get_db),
