@@ -115,7 +115,7 @@ def create_own_tournament(db: Session, owner_id: int, name: str, description: st
 
 
 # COMPETITOR
-def get_tournament_competitors(db: Session, tournament_id: int, skip: int = 0, limit: int = 100):
+def get_tournament_competitors(db: Session, tournament_id: int, skip: int = 0):
     return (
         db.query(models.Competitor)
         .filter(models.Competitor.tournament_id == tournament_id)
@@ -207,8 +207,6 @@ def create_match(
     competitor_two: int,
     round: int = 0
 ):
-    comp_one = get_competitor(db=db, competitor_id=competitor_one)
-    comp_two = get_competitor(db=db, competitor_id=competitor_two)
     db_match = models.Match(
         tournament_id=tournament_id,
         competitor_one=competitor_one,
@@ -223,34 +221,41 @@ def create_match(
 
 def update_match(db: Session, tournament_id: int, match_id: int, winner_id: int):
     match = get_match_by_id(db=db, tournament_id=tournament_id, match_id=match_id)
-    if(not match):
+    if not match:
         return
-    if (match.competitor_one == winner_id):
-        winner = get_competitor(db=db, competitor_id=match.competitor_one)
-        loser = get_competitor(db=db, competitor_id=match.competitor_two)
-    else:
-        winner = get_competitor(db=db, competitor_id=match.competitor_two)
-        loser = get_competitor(db=db, competitor_id=match.competitor_one)
-    wins = winner.wins + 1
-    losses = loser.losses + 1
-    update_competitor(
-        db=db,
-        competitor_id=winner.id,
-        competitor_name=winner.name,
-        wins=wins,
-        losses=winner.losses
-    )
-    update_competitor(
-        db=db,
-        competitor_id=loser.id,
-        competitor_name=loser.name,
-        wins=loser.wins,
-        losses=losses)
-    match.winner_id = winner.id
-    match.loser_id = loser.id
-    db.add(match)
-    db.commit()
-    db.refresh(match)
+    if winner_id:
+        competitor_one = get_competitor(db=db, competitor_id=match.competitor_one)
+        competitor_two = get_competitor(db=db, competitor_id=match.competitor_two)
+
+        if winner_id == competitor_one.id:
+            winner = competitor_one
+            loser = competitor_two
+
+        if winner_id == competitor_two.id:
+            winner = competitor_two
+            loser = competitor_one
+
+        wins = winner.wins + 1
+        losses = loser.losses + 1
+
+        update_competitor(
+            db=db,
+            competitor_id=winner.id,
+            competitor_name=winner.name,
+            wins=wins,
+            losses=winner.losses
+        )
+        update_competitor(
+            db=db,
+            competitor_id=loser.id,
+            competitor_name=loser.name,
+            wins=loser.wins,
+            losses=losses)
+        match.winner_id = winner.id
+        match.loser_id = loser.id
+        db.add(match)
+        db.commit()
+        db.refresh(match)
     return match
 
 
@@ -271,11 +276,11 @@ def get_round(db: Session, tournament_id: int, competitors: list, round: int):
     matched_players_for_round = []
     for competitor in competitors:
         if competitor.id not in matched_players_for_round:
-            print(f'    Competitor ID: {competitor.id}')
             matched_players_for_round.append(competitor.id)
             other_comps_ids = [
                 c.id for c in db.query(models.Competitor).filter(
-                    (models.Competitor.id != competitor.id)
+                    (models.Competitor.id != competitor.id),
+                    (models.Competitor.tournament_id == tournament_id)
                 )
                 .order_by(models.Competitor.wins.desc())
                 .all()
@@ -288,9 +293,7 @@ def get_round(db: Session, tournament_id: int, competitors: list, round: int):
                     for c in other_comps_ids:
                         if c not in matched_players_for_round:
                             matched = c
-                if (not matched):
-                    return get_matches(db=db, tournament_id=tournament_id, round=round)
-            else:
+            else
                 played_ids = []
                 competitor_matches = get_matches_by_competitor(
                     db=db,
@@ -298,17 +301,19 @@ def get_round(db: Session, tournament_id: int, competitors: list, round: int):
                     competitor_id=competitor.id
                 )
                 for match in competitor_matches:
-                    if (match.competitor_one == competitor.id):
+                    if match.competitor_one == competitor.id and match.competitor_two:
                         played_ids.append(match.competitor_two)
-                    else:
+                    elif match.competitor_two == competitor.id and match.competitor_one:
                         played_ids.append(match.competitor_one)
-                print(f'    Played: {[player for player in played_ids]}')
+                    else:
+                        pass
                 available_matches = [c for c in other_comps_ids if c not in played_ids and c not in matched_players_for_round]
-                print(f'    Available: {available_matches}')
                 # take the first available (prev sorted in above query)
-                if (len(available_matches) == 0): # they have been matched to everyone
+                if len(available_matches) == 0: # they have been matched to everyone
                     return get_matches(db=db, tournament_id=tournament_id, round=round)
                 matched = available_matches[0]
+            # Outside of if else condition for first round or subsequent rounds
+            # Matches created here
             matched_players_for_round.append(matched)
             create_match(
                 db=db,

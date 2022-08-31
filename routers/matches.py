@@ -26,7 +26,7 @@ def get_matches(
     return crud.get_matches(db=db, tournament_id=tournament_id, round=round)
 
 
-@router.get('/matches/match_competitors', response_model=List[schemas.Match], status_code=status.HTTP_201_CREATED)
+@router.get('/matches/match_competitors', response_model=List[schemas.Match])
 def match_competitors(
     tournament_id: int,
     db: Session = Depends(get_db),
@@ -38,9 +38,6 @@ def match_competitors(
         raise HTTPException(status_code=404, detail='Not found.')
 
     competitors = crud.get_tournament_competitors(db=db, tournament_id=tournament_id)
-
-    if len(competitors) % 2 != 0:
-        raise HTTPException(status_code=404, detail='Must have an even number of competitors to begin.')
 
     round = crud.get_current_round(db=db, tournament_id=tournament_id)
     matches = crud.get_matches(db=db, tournament_id=tournament_id, round=round)
