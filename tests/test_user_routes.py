@@ -1,10 +1,14 @@
 """Test user routes."""
 
 
+from wsgiref import headers
+
+
 def test_create_user_success(client):
     response = client.post(
-        '/users/',
-        json={'username': 'deadpool@example.com', 'password': 'chimichangas4life'},
+        '/users',
+        headers={'Content-Type': 'application/x-www-form-urlencoded'},
+        data={'username': 'deadpool@example.com', 'password': 'chimichangas4life'},
     )
     assert response.status_code == 201, response.text
     data = response.json()
@@ -14,12 +18,14 @@ def test_create_user_success(client):
 
 def test_create_user_already_exists(client):
     client.post(
-        '/users/',
-        json={'username': 'deadpool@example.com', 'password': 'chimichangas4life'},
+        '/users',
+        headers={'Content-Type': 'application/x-www-form-urlencoded'},
+        data={'username': 'deadpool@example.com', 'password': 'chimichangas4life'},
     )
     response = client.post(
-        '/users/',
-        json={'username': 'deadpool@example.com', 'password': 'chimichangas4life'},
+        '/users',
+        headers={'Content-Type': 'application/x-www-form-urlencoded'},
+        data={'username': 'deadpool@example.com', 'password': 'chimichangas4life'},
     )
     assert response.status_code == 400, response.text
     data = response.json()
