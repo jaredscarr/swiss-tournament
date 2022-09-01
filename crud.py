@@ -293,7 +293,7 @@ def get_round(db: Session, tournament_id: int, competitors: list, round: int):
                     for c in other_comps_ids:
                         if c not in matched_players_for_round:
                             matched = c
-            else
+            else:
                 played_ids = []
                 competitor_matches = get_matches_by_competitor(
                     db=db,
