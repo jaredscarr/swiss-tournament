@@ -114,6 +114,23 @@ def create_own_tournament(db: Session, owner_id: int, name: str, description: st
     return db_tournament
 
 
+def update_tournament(db=Session, id=int, name=str, description=str,
+        in_progress=int, in_progress_round=int, complete=bool):
+    tournament = get_tournament_by_id(db=db, tournament_id=id)
+    print(f'FUCKING: {complete}')
+    tournament.id = id
+    tournament.name = name
+    tournament.description = description
+    tournament.in_progress = in_progress
+    tournament.in_progress_round = in_progress_round
+    tournament.complete = complete
+    
+    db.add(tournament)
+    db.commit()
+    db.refresh(tournament)
+    return tournament
+
+
 # COMPETITOR
 def get_tournament_competitors(db: Session, tournament_id: int, skip: int = 0):
     return (

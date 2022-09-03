@@ -47,3 +47,79 @@ def test_authenticated_get_own_tournaments(client, user_token_headers):
     assert response.status_code == 200, response.text
     data = response.json()
     assert len(data) == 3
+
+
+def test_update_tournament_success(client, user_token_headers):
+    post_response = client.post(
+        '/tournaments',
+        headers=user_token_headers,
+        json={'name': 'test-tournament-update'},
+    )
+    
+    assert post_response.status_code == 201, post_response.text
+    data = post_response.json()
+    assert data['complete'] == None
+    tournament = data
+    json_body = {
+        'id': tournament['id'],
+        'name': tournament['name'],
+        'description': tournament['description'],
+        'in_progress': tournament['in_progress'],
+        'in_progress_round': tournament['in_progress_round'],
+        'complete': True
+    }
+    put_response = client.put(
+        '/tournaments',
+        headers=user_token_headers,
+        json=json_body,
+    )
+    assert put_response.status_code == 200, put_response.text
+    data = put_response.json()
+    assert data['complete'] == True
+
+
+def test_update_tournament_success_with_null_value(client, user_token_headers):
+    post_response = client.post(
+        '/tournaments',
+        headers=user_token_headers,
+        json={'name': 'test-tournament-update'},
+    )
+    
+    assert post_response.status_code == 201, post_response.text
+    data = post_response.json()
+    assert data['in_progress'] == None
+    tournament = data
+    json_body = {
+        'id': tournament['id'],
+        'name': tournament['name'],
+        'description': tournament['description'],
+        'in_progress': 67,
+        'in_progress_round': 1,
+        'complete': False
+    }
+    put_response = client.put(
+        '/tournaments',
+        headers=user_token_headers,
+        json=json_body,
+    )
+    assert put_response.status_code == 200, put_response.text
+    data = put_response.json()
+    assert data['in_progress'] == 67
+    assert data['in_progress_round'] == 1
+    json_body = {
+        'id': tournament['id'],
+        'name': tournament['name'],
+        'description': tournament['description'],
+        'in_progress': None,
+        'in_progress_round': None,
+        'complete': False
+    }
+  
+    put_response_two = client.put(
+        '/tournaments',
+        headers=user_token_headers,
+        json=json_body,
+    )
+    assert put_response_two.status_code == 200, put_response_two.text
+    assert data['in_progress'] == None
+    assert data['in_progress_round'] == None
