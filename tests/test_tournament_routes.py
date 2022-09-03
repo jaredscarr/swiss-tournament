@@ -95,7 +95,7 @@ def test_update_tournament_success_with_null_value(client, user_token_headers):
         'description': tournament['description'],
         'in_progress': 67,
         'in_progress_round': 1,
-        'complete': False
+        'complete': None
     }
     put_response = client.put(
         '/tournaments',
@@ -112,7 +112,7 @@ def test_update_tournament_success_with_null_value(client, user_token_headers):
         'description': tournament['description'],
         'in_progress': None,
         'in_progress_round': None,
-        'complete': False
+        'complete': None
     }
   
     put_response_two = client.put(
@@ -121,5 +121,6 @@ def test_update_tournament_success_with_null_value(client, user_token_headers):
         json=json_body,
     )
     assert put_response_two.status_code == 200, put_response_two.text
+    data = put_response_two.json()
     assert data['in_progress'] == None
     assert data['in_progress_round'] == None
