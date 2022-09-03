@@ -24,6 +24,9 @@ class Tournament(Base):
     name = Column(String, index=True)
     description = Column(String, index=True)
     owner_id = Column(Integer, ForeignKey('users.id'))
+    in_progress = Column(Integer)
+    in_progress_round = Column(Integer)
+    complete = Column(Boolean)
 
     owner = relationship('User', back_populates='tournaments')
     matches = relationship('Match')
