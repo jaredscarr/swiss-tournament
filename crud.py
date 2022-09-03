@@ -117,7 +117,6 @@ def create_own_tournament(db: Session, owner_id: int, name: str, description: st
 def update_tournament(db=Session, id=int, name=str, description=str,
         in_progress=int, in_progress_round=int, complete=bool):
     tournament = get_tournament_by_id(db=db, tournament_id=id)
-    print(f'FUCKING: {complete}')
     tournament.id = id
     tournament.name = name
     tournament.description = description
