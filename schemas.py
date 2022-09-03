@@ -17,9 +17,21 @@ class Tournament(TournamentBase):
     name: str
     description: Optional[str] = None
     owner_id: int
+    in_progress: Optional[int] = None
+    in_progress_round: Optional[int] = None
+    complete: Optional[bool] = False
 
     class Config:
         orm_mode = True
+
+
+class TournamentUpdate(TournamentBase):
+    id: int
+    name: str
+    description: Optional[str] = None
+    in_progress: Optional[int] = None
+    in_progress_round: Optional[int] = None
+    complete: Optional[bool] = False
 
 
 class MatchBase(BaseModel):
