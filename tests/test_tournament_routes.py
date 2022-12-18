@@ -1,9 +1,11 @@
 """Test tournament routes."""
 
+URL_PREFIX = '/api/v1/swiss-tournament'
+
 
 def test_create_tournament_success(client, user_token_headers):
     response = client.post(
-        '/tournaments',
+        f'{URL_PREFIX}/tournaments',
         headers=user_token_headers,
         json={'name': 'Knights of the Round Table', 'description': 'Melee battle'},
     )
@@ -15,12 +17,12 @@ def test_create_tournament_success(client, user_token_headers):
 
 def test_create_tournament_already_exists(client, user_token_headers):
     client.post(
-        '/tournaments',
+        f'{URL_PREFIX}/tournaments',
         headers=user_token_headers,
         json={'name': 'Knights of the Round Table', 'description': 'Melee battle'},
     )
     response = client.post(
-        '/tournaments',
+        f'{URL_PREFIX}/tournaments',
         headers=user_token_headers,
         json={'name': 'Knights of the Round Table', 'description': 'Melee battle'},
     )
@@ -30,7 +32,7 @@ def test_create_tournament_already_exists(client, user_token_headers):
 
 
 def test_unauthenticated_user(client):
-    response = client.get('/tournaments')
+    response = client.get(f'{URL_PREFIX}/tournaments')
     assert response.status_code == 401, response.text
     data = response.json()
     assert data == {'detail': 'Not authenticated'}
@@ -39,11 +41,11 @@ def test_unauthenticated_user(client):
 def test_authenticated_get_own_tournaments(client, user_token_headers):
     for tournament in ['T1', 'T2', 'T3']:
         client.post(
-            '/tournaments',
+            f'{URL_PREFIX}/tournaments',
             headers=user_token_headers,
             json={'name': tournament},
         )
-    response = client.get('/tournaments', headers=user_token_headers)
+    response = client.get(f'{URL_PREFIX}/tournaments', headers=user_token_headers)
     assert response.status_code == 200, response.text
     data = response.json()
     assert len(data) == 3
@@ -51,7 +53,7 @@ def test_authenticated_get_own_tournaments(client, user_token_headers):
 
 def test_update_tournament_success(client, user_token_headers):
     post_response = client.post(
-        '/tournaments',
+        f'{URL_PREFIX}/tournaments',
         headers=user_token_headers,
         json={'name': 'test-tournament-update'},
     )
@@ -69,7 +71,7 @@ def test_update_tournament_success(client, user_token_headers):
         'complete': True
     }
     put_response = client.put(
-        '/tournaments',
+        f'{URL_PREFIX}/tournaments',
         headers=user_token_headers,
         json=json_body,
     )
@@ -80,7 +82,7 @@ def test_update_tournament_success(client, user_token_headers):
 
 def test_update_tournament_success_with_null_value(client, user_token_headers):
     post_response = client.post(
-        '/tournaments',
+        f'{URL_PREFIX}/tournaments',
         headers=user_token_headers,
         json={'name': 'test-tournament-update'},
     )
@@ -98,7 +100,7 @@ def test_update_tournament_success_with_null_value(client, user_token_headers):
         'complete': None
     }
     put_response = client.put(
-        '/tournaments',
+        f'{URL_PREFIX}/tournaments',
         headers=user_token_headers,
         json=json_body,
     )
@@ -116,7 +118,7 @@ def test_update_tournament_success_with_null_value(client, user_token_headers):
     }
   
     put_response_two = client.put(
-        '/tournaments',
+        f'{URL_PREFIX}/tournaments',
         headers=user_token_headers,
         json=json_body,
     )

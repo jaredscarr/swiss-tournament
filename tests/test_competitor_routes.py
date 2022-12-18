@@ -1,10 +1,13 @@
 """Test competitor routes."""
 
 
+URL_PREFIX = '/api/v1/swiss-tournament'
+
+
 def test_get_competitors_for_tournament(client, user_token_headers, test_tournament, test_competitor_one):
     # The order matters here so keep this at the top. The test database
     # is persisted so even though the transaction is rolled back the id is not reused
-    response = client.get(f'/competitors?tournament_id={test_tournament.id}', headers=user_token_headers)
+    response = client.get(f'{URL_PREFIX}/competitors?tournament_id={test_tournament.id}', headers=user_token_headers)
     assert response.status_code == 200, response.text
     data = response.json()
     assert len(data) == 1
@@ -12,7 +15,7 @@ def test_get_competitors_for_tournament(client, user_token_headers, test_tournam
 
 def test_create_competitor_success(client, user_token_headers, test_tournament):
     response = client.post(
-        f'/competitors',
+        f'{URL_PREFIX}/competitors',
         headers=user_token_headers,
         json={'name': 'Lancelot', 'tournament_id': test_tournament.id},
     )
@@ -26,7 +29,7 @@ def test_create_competitor_success(client, user_token_headers, test_tournament):
 
 def test_tournament_does_not_exist(client, user_token_headers):
     response = client.post(
-        '/competitors',
+        f'{URL_PREFIX}/competitors',
         headers=user_token_headers,
         json={'name': 'Lancelot', 'tournament_id': 2000000}
     )
@@ -38,7 +41,7 @@ def test_tournament_does_not_exist(client, user_token_headers):
 
 def test_unauthenticated_user(client, test_tournament):
     response = client.post(
-        '/competitors',
+        f'{URL_PREFIX}/competitors',
         json={'name': 'Lancelot', 'tournament_id': test_tournament.id},
     )
     assert response.status_code == 401, response.text
@@ -48,7 +51,7 @@ def test_unauthenticated_user(client, test_tournament):
 
 def test_unauthenticated_user_incorrect_token(client, test_tournament):
     response = client.post(
-        '/competitors',
+        f'{URL_PREFIX}/competitors',
         headers={'Authorization': 'Bearer NotTheRightToken'},
         json={'name': 'Lancelot', 'tournament_id': test_tournament.id},
     )
@@ -67,7 +70,7 @@ def test_update_wins_to_competitor(client, user_token_headers, test_tournament, 
         'losses': test_competitor_one.losses,
     }
     response = client.put(
-        '/competitors',
+        f'{URL_PREFIX}/competitors',
         headers=user_token_headers,
         json=json_payload,
     )
@@ -86,7 +89,7 @@ def test_update_lose_to_competitor(client, user_token_headers, test_tournament, 
         'losses': 1,
     }
     response = client.put(
-        '/competitors',
+        f'{URL_PREFIX}/competitors',
         headers=user_token_headers,
         json=json_payload,
     )
