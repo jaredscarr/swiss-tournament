@@ -1,12 +1,12 @@
 """Test user routes."""
 
 
-from wsgiref import headers
+URL_PREFIX = '/api/v1/swiss-tournament'
 
 
 def test_create_user_success(client):
     response = client.post(
-        '/users',
+        f'{URL_PREFIX}/users',
         headers={'Content-Type': 'application/x-www-form-urlencoded'},
         data={'username': 'deadpool@example.com', 'password': 'chimichangas4life'},
     )
@@ -18,12 +18,12 @@ def test_create_user_success(client):
 
 def test_create_user_already_exists(client):
     client.post(
-        '/users',
+        f'{URL_PREFIX}/users',
         headers={'Content-Type': 'application/x-www-form-urlencoded'},
         data={'username': 'deadpool@example.com', 'password': 'chimichangas4life'},
     )
     response = client.post(
-        '/users',
+        f'{URL_PREFIX}/users',
         headers={'Content-Type': 'application/x-www-form-urlencoded'},
         data={'username': 'deadpool@example.com', 'password': 'chimichangas4life'},
     )
@@ -33,19 +33,19 @@ def test_create_user_already_exists(client):
 
 
 def test_authed_user(client, user_token_headers):
-    response = client.get('/users/me', headers=user_token_headers)
+    response = client.get(f'{URL_PREFIX}/users/me', headers=user_token_headers)
     assert response.status_code == 200, response.text
 
 
 def test_unauthenticated_user(client):
-    response = client.get('/users/me')
+    response = client.get(f'{URL_PREFIX}/users/me')
     assert response.status_code == 401, response.text
     data = response.json()
     assert data == {'detail': 'Not authenticated'}
 
 
 def test_unauthenticated_user_invalid_credentials(client):
-    response = client.get('/users/me', headers={'Authorization': 'Bearer NotTheRightToken'})
+    response = client.get(f'{URL_PREFIX}/users/me', headers={'Authorization': 'Bearer NotTheRightToken'})
     assert response.status_code == 401, response.text
     data = response.json()
     assert data == {'detail': 'Invalid authentication credentials'}

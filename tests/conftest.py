@@ -1,3 +1,4 @@
+from urllib.error import URLError
 from fastapi.testclient import TestClient
 import pytest
 from sqlalchemy import create_engine, event
@@ -5,11 +6,14 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy_utils import database_exists, create_database, drop_database
 from typing import Dict
 
-from config import settings
-import crud
-from database import Base, get_db
-from main import app
-import models
+from app.config import settings
+import app.crud as crud
+from app.database import Base, get_db
+from app.main import app
+import app.models as models
+
+
+URL_PREFIX = '/api/v1/swiss-tournament'
 
 
 def get_test_db_uri() -> str:
@@ -177,7 +181,7 @@ def user_token_headers(
         'username': test_user.username,
         'password': test_password,
     }
-    r = client.post('/token', data=login_data)
+    r = client.post(f'{URL_PREFIX}/token', data=login_data)
     tokens = r.json()
     a_token = tokens['access_token']
     headers = {'Authorization': f'Bearer {a_token}'}

@@ -4,11 +4,11 @@ from jose import JWTError, jwt
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 
-from database import get_db
-from dependencies import TokenData, oauth2_scheme
-from config import settings
-import models
-import schemas
+from app.database import get_db
+from app.dependencies import TokenData, oauth2_scheme
+from app.config import settings
+import app.models as models
+import app.schemas as schemas
 
 
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')

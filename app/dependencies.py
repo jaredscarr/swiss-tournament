@@ -5,7 +5,7 @@ from jose import jwt
 from pydantic import BaseModel
 from typing import Optional
 
-from config import settings
+from app.config import settings
 
 # to get a string like this run:
 # openssl rand -hex 32
