@@ -23,8 +23,6 @@ to compete again.
   - SQLALCHEMY_DATABASE_URI=uri
 - Alembic
   One way to do this quickly is to delete the migrations files in the alembic/verions/ and then run:
-  - alembic init
-  - run first migration
   - alembic revision -m "create account table"
   - alembic upgrade head
 
